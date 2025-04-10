@@ -16,10 +16,7 @@ export const verifyUser = (token) => async (dispatch) => {
   try {
     dispatch({ type: VERIFY_REQUEST });
 
-    const { data } = await axios.get(
-      `${API_BASE_URL}/api/v1/email/verify/${token}`,
-      { withCredentials: true }
-    );
+    const { data } = await axios.get(`${API_BASE_URL}/api/v1/email/verify/${token}`);
 
     dispatch({ type: VERIFY_SUCCESS, payload: data.message });
 
@@ -27,6 +24,7 @@ export const verifyUser = (token) => async (dispatch) => {
 
     window.location.href = "/"; 
   } catch (error) {
+
     const errorMsg = error.response?.data?.message || error.message || "Verification failed";
 
     dispatch({ type: VERIFY_FAIL, payload: errorMsg });
