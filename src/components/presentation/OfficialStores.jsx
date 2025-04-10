@@ -62,7 +62,7 @@ export default function OfficialStores() {
                 {/* Product Image */}
                 <Link to={`/store/products/${store._id}`}>
                 <img
-                  src={`${import.meta.env.VITE_APP}${store.photo.url}`}
+                  src={`${import.meta.env.VITE_APP}${store?.photo?.url}`}
                   alt={store.name}
                   className="w-full h-40 object-cover"
                 />

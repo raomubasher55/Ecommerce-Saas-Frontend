@@ -22,31 +22,35 @@ import { getUserConfig } from '../../utils/apiConfig';
 export const registerUser = (userData) => async (dispatch) => {
   try {
     dispatch({ type: REGISTER_USER_REQUEST });
-
+    
+    // Don't manually set content-type for FormData - let Axios handle it
     const config = {
       headers: {
-        "Content-Type": "multipart/form-data", 
+        "Content-Type": "application/json",
       },
     };
-    console.log(userData)
+    
 
-    const { data } = await axios.post(`${import.meta.env.VITE_APP}/api/v1/register`, userData, config);
-    console.log(data)
+
+    const { data } = await axios.post(
+      `${import.meta.env.VITE_APP}/api/v1/register`, 
+      userData, 
+      config
+    );
+    
     localStorage.setItem("token", data.token);
     dispatch({ type: REGISTER_USER_SUCCESS, payload: data });
 
-
   } catch (error) {
+    
     dispatch({
       type: REGISTER_USER_FAILURE,
       payload: error.response?.data?.message || error.message,
     });
 
-    // Show error toast
     toast.error(`Registration failed: ${error.response?.data?.message || error.message}`);
   }
 };
-
 
 
 

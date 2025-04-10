@@ -65,24 +65,36 @@ export const registerStore = (storeData) => async (dispatch) => {
   try {
     dispatch({ type: STORE_REGISTER_REQUEST });
 
+  
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    
+    // console.log(object.keys(storeData));
+    console.log(storeData);
     const { data } = await axios.post(
-      `${import.meta.env.VITE_APP}/api/v1/store/register`,
+      `${import.meta.env.VITE_APP}/api/v1/store/register`, 
       storeData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data", 
-        },
-      }
+      config
     );
 
     localStorage.setItem("storeToken", data.token);
     dispatch({ type: STORE_REGISTER_SUCCESS, payload: data });
     
   } catch (error) {
-    toast.error(error.response?.data?.error?.message)
+    console.log("Error details:", error);
+    
+    const errorMessage = error.response?.data?.error?.message || 
+                         error.message || 
+                         "Something went wrong";
+    
+    toast.error(errorMessage);
+    
     dispatch({
       type: STORE_REGISTER_FAIL,
-      payload: error.response?.data?.error?.message || "Something went wrong",
+      payload: errorMessage,
     });
   }
 };

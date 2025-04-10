@@ -140,24 +140,31 @@ const RegisterStore = () => {
     };
 
     const handleConfirmRegistration = () => {
-
         const formDataToSend = new FormData();
+        
+        // Add fields to FormData
         for (let key in formData) {
             if (key === 'photo') {
                 formDataToSend.append('photo', formData.photo);
             } else if (key === 'location') {
                 formDataToSend.append('location', JSON.stringify(formData.location));
-            } else {
+            } else if (key !== 'showPassword' && key !== 'showConfirmPassword' && key !== 'passwordStrength') {
+                // Skip UI-only fields
                 formDataToSend.append(key, formData[key]);
             }
         }
-
-
+        
+        // Add extra fields
         formDataToSend.append('ownerFullName', `${formData.ownerFirstName} ${formData.ownerLastName}`);
-
+        
+        // Debug FormData properly - this shows the actual content
+      
+        // Now actually dispatch to Redux action
         dispatch(registerStore(formDataToSend));
         setShowModal(false);
     };
+    
+
 
 
     const handleCaptchaChange = (value) => {

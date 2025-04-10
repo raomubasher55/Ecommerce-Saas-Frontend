@@ -72,7 +72,7 @@ export default function BestBrands() {
                 key={store._id}
                 className="relative h-[120px] rounded-lg overflow-hidden shadow-md transition-transform duration-300 transform hover:scale-105"
                 style={{
-                  backgroundImage: `url(${import.meta.env.VITE_APP}${store.photo.url})`,
+                  backgroundImage: `url(${import.meta.env.VITE_APP}${store?.photo?.url})`,
                   backgroundPosition: "center",
                   backgroundSize: "cover",
                 }}

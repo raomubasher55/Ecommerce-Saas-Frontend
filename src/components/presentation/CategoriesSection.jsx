@@ -57,7 +57,7 @@ export default function CategoriesSection() {
                 className="relative h-40 rounded-lg shadow-lg overflow-hidden group cursor-pointer"
                 onClick={() => handleCategoryClick(category?.name)}
                 style={{
-                  backgroundImage: `url(${import.meta.env.VITE_APP}${store.photo.url})`,
+                  backgroundImage: `url(${import.meta.env.VITE_APP}${store?.photo?.url})`,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
                 }}
