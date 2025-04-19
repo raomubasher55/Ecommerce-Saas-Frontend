@@ -14,7 +14,7 @@ import PaymentApprove from "./admin/PaymentApprove";
 import { useParams } from "react-router-dom";
 import BlacklistProducts from "./admin/BlacklistProducts";
 import CustomerSupport from "./admin/CustomerSupport";
-import Info from "./admin/info";
+import Info from "./admin/Info";
 import StoreStatus from "./admin/StoreStauts";
 
 const AdminDashboard = () => {
