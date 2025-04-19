@@ -23,7 +23,7 @@ import SearchResults from "./components/search/SearchResults";
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentFailure from "./pages/PaymentFailure";
+import PaymentFailure from "./pages/paymentFailure";
 import ResetPassword from './pages/ResetPassword';
 import DealAndOffers from "./pages/DealAndOffers";
 import Shipping from "./components/Footers/Shipping";
