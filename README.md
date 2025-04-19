@@ -35,3 +35,4 @@ src/
 ├── utils/                      # Utility functions (validation, formatting, etc.)
 ├── App.js                      # Main app component
 └── index.js                    # Entry point
+<!-- sudo cp -r /root/Ecommerce-Saas-Frontend/dist/* /var/www/cebleu/dist/ -->
