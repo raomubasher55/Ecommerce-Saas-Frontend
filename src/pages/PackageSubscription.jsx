@@ -36,6 +36,7 @@ const PackageSubscription = () => {
     fetchPlans();
   }, []);
 
+  console.log(plans)
   const fetchPlans = async () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_APP_API_URL}/api/v1/subscription`);
@@ -99,12 +100,27 @@ const PackageSubscription = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedPackage || !paymentMethod) {
-      alert(translatedContent.validationAlert);
-      return;
-    }
+    // if (!selectedPackage || !paymentMethod) {
+    //   alert(translatedContent.validationAlert);
+    //   return;
+    // }
     dispatch(subscribePackage(selectedPackage.name, paymentMethod));
   };
+
+  function formatFeatureName(feature) {
+    return feature
+      .replace(/([A-Z])/g, ' $1')      
+      .replace(/\s+/g, ' ')   
+      .trim()
+      .replace(/^./, str => str.toUpperCase());
+  }
+  
+  function formatFeatureValue(value) {
+    if (value === true) return "Yes";
+    if (value === false) return "No";
+    return value; 
+  }
+  
 
   return (
     <>
@@ -142,16 +158,29 @@ const PackageSubscription = () => {
         </p>
 
         <ul className="space-y-2">
-          {pkg.features &&
-            Object.entries(pkg.features).map(([feature, value]) => (
-              <li key={feature} className="flex items-center text-gray-800 text-sm">
-                <span className="font-semibold text-[#4222C4] mr-2">
-                  {feature.charAt(0).toUpperCase() + feature.slice(1)}:
-                </span>
-                <span>{value}</span>
-              </li>
-            ))}
-        </ul>
+  {pkg.features &&
+    Object.entries(pkg.features)
+      .map(([feature, value]) => (
+        <li
+          key={feature}
+          className="flex items-center justify-between text-gray-800 text-sm 
+                     border border-gray-300 rounded-md px-3 py-2 
+                     hover:shadow-md hover:border-[#4222C4] transition-all duration-300"
+        >
+          {/* Fixed width for feature name */}
+          <span className="font-semibold text-[#4222C4] w-40 text-left">
+            {formatFeatureName(feature)}:
+          </span>
+          {/* Fixed width for value */}
+          <span className="w-32 text-left">
+            {formatFeatureValue(value)}
+          </span>
+        </li>
+      ))}
+</ul>
+
+
+
 
         <button
           onClick={() => openModal(pkg)}

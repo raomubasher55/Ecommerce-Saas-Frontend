@@ -93,19 +93,19 @@ export default function Subscription() {
       <div className="overflow-x-auto">
         <table className="min-w-full border text-center">
           <thead>
-            <tr className="bg-blue-100">
+            <tr className="bg-gray-300">
               <th className="border p-2">Features</th>
               {plans.map((plan, idx) => (
                 <th key={idx} className="border p-2">
                   <div className="flex flex-col items-center">
                     <div className="font-semibold">{plan.name}</div>
                     <input
-                      className="border border-blue-200 p-1 text-center w-24 mt-1"
+                      className="border border-gray-200 p-1 text-center w-24 mt-1"
                       type="number"
                       value={plan.price}
                       onChange={(e) => handlePriceChange(idx, e.target.value)}
                     />
-                    <div className="text-xs text-gray-500">DZD</div>
+                    <div className="text-xs text-gray-500">AD</div>
                   </div>
                 </th>
               ))}
@@ -114,7 +114,7 @@ export default function Subscription() {
           <tbody>
             {featuresList.map((feature, featureIdx) => (
               <tr key={featureIdx} className={featureIdx % 2 === 0 ? "bg-white" : "bg-blue-50"}>
-                <td className="border border-blue-200 p-1 flex justify-between items-center">
+                <td className="border border-gray-300 p-1 flex justify-between items-center">
                   <span>{feature}</span>
                   {/* <button onClick={() => deleteFeature(feature)} className="text-red-500 ml-2">
                     <FaTrash />
