@@ -1,126 +1,60 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { FaEllipsisV } from 'react-icons/fa';
-import { RiDeleteBinLine } from 'react-icons/ri'; 
-import { FiEdit } from 'react-icons/fi';
-import { getAllPackages, updatePackage } from '../../../store/actions/packageActions'; 
-
-
-const packageData = {
-  Self: {
-    name: "Self",
-    price: 500,
-    features: {
-      productLimit: 10,
-      support: "Basic Email Support",
-      analytics: "Basic Analytics",
-      paymentGateways: "Standard Gateways",
-      marketingTools: false,
-      globalReach: false,
-      referralProgram: false,
-      transactionLimits: "Up to $500/month",
-    },
-  },
-  Medium: {
-    name: "Medium",
-    price: 1000,
-    features: {
-      productLimit: 50,
-      support: "Priority Email Support",
-      analytics: "Advanced Analytics",
-      paymentGateways: "Standard + Premium Gateways",
-      marketingTools: true,
-      globalReach: true,
-      referralProgram: true,
-      transactionLimits: "Up to $2000/month",
-    },
-  },
-  Enterprise: {
-    name: "Enterprise",
-    price: 5000,
-    features: {
-      productLimit: 100,
-      support: "24/7 Support",
-      analytics: "Full Analytics Suite",
-      paymentGateways: "All Gateways + Custom Integrations",
-      marketingTools: true,
-      globalReach: true,
-      referralProgram: true,
-      transactionLimits: "Up to $50,000/month",
-    },
-  },
-  Large: {
-    name: "Large",
-    price: 15000,
-    features: {
-      productLimit: 500,
-      support: "Dedicated Account Manager",
-      analytics: "Custom Analytics and Reporting",
-      paymentGateways: "All Gateways + Custom Integrations",
-      marketingTools: true,
-      globalReach: true,
-      referralProgram: true,
-      transactionLimits: "Unlimited",
-    },
-  },
-};
+import { getAllPackages } from '../../../store/actions/packageActions';
 
 const Packages = () => {
   const dispatch = useDispatch();
   const { packages, error, loading } = useSelector(state => state.package);
-  const [showModal, setShowModal] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [editForm, setEditForm] = useState({
-    name: '',
-  });
-  const [currentFeatures, setCurrentFeatures] = useState({});
-console.log(packages)
+  const [selectedPackage, setSelectedPackage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   useEffect(() => {
     dispatch(getAllPackages());
   }, [dispatch]);
 
+  const getUniqueLatestPackages = (packagesList) => {
+    const latestPackagesMap = new Map();
 
-  const filteredPackages = packages?.filter((packageItem) => {
+    packagesList.forEach((pkg) => {
+      const sellerId = pkg.seller?._id;
+      if (!sellerId) return;
+
+      const existingPkg = latestPackagesMap.get(sellerId);
+      if (!existingPkg) {
+        latestPackagesMap.set(sellerId, pkg);
+      } else {
+        const existingDate = new Date(existingPkg.updatedAt);
+        const newDate = new Date(pkg.updatedAt);
+        if (newDate > existingDate) {
+          latestPackagesMap.set(sellerId, pkg);
+        }
+      }
+    });
+
+    return Array.from(latestPackagesMap.values());
+  };
+
+  const uniquePackages = getUniqueLatestPackages(packages || []);
+
+  const filteredPackages = uniquePackages.filter((packageItem) => {
     return (
       packageItem.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       packageItem?._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       packageItem?.seller?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (searchQuery.toLowerCase() === 'active' && packageItem.isActive) ||
+      (searchQuery.toLowerCase() === 'active' && packageItem.isActive) ||
       (searchQuery.toLowerCase() === 'inactive' && !packageItem.isActive)
     );
   });
 
-  const handleEdit = (packageItem) => {
-    setSelectedPackage(packageItem._id);
-    setEditForm({
-      name: packageItem.name,
-    });
-    setCurrentFeatures(packageItem.features); 
-    setShowModal(true);
+  const openModal = (packageItem) => {
+    setSelectedPackage(packageItem);
+    setIsModalOpen(true);
   };
 
-  const handleUpdate = () => {
-    const updatedPackage = {
-      name: editForm.name,
-      price: packageData[editForm.name].price, 
-      features: packageData[editForm.name].features, 
-    };
-  
-    dispatch(updatePackage(selectedPackage, updatedPackage));
-    setShowModal(false);
+  const closeModal = () => {
     setSelectedPackage(null);
-  };
-  
-
-
-  const handlePackageChange = (e) => {
-    const selectedPackageName = e.target.value;
-    const selectedPackageData = packageData[selectedPackageName];
-    setEditForm({
-      name: selectedPackageData.name,
-    });
-    setCurrentFeatures(selectedPackageData.features); 
+    setIsModalOpen(false);
   };
 
   if (loading) {
@@ -132,10 +66,9 @@ console.log(packages)
   }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8 text-[#5A3ECB] text-center">
-        All Packages
-      </h1>
+    <div className="container mx-auto w-[260px] sm:w-max p-2 sm:p-4 overflow-hidden">
+      <h1 className="text-3xl font-bold mb-8 text-[#5A3ECB] text-center">Active Store Packages</h1>
+      
       <input
         type="text"
         placeholder="Search by Name, Store, ID, or Status"
@@ -144,128 +77,101 @@ console.log(packages)
         className="w-full mb-4 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#5A3ECB]"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {filteredPackages.length > 0 ? (
-        filteredPackages?.map((packageItem) => (
-          <div
-            key={packageItem._id}
-            className="bg-white shadow-md rounded-xl p-6 border border-gray-200 transition-transform duration-300 hover:scale-105 hover:shadow-xl relative"
-          >
-            <div className="absolute top-4 right-4">
-              <FaEllipsisV
-                className="text-xl cursor-pointer hover:text-[#5A3ECB] transition-colors duration-200"
-                onClick={() => setSelectedPackage(packageItem._id)}
-              />
-              {selectedPackage === packageItem._id && (
-                <div className="absolute right-0 mt-2 bg-white shadow-md border rounded-lg z-10">
-                  <div
-                    className="px-4 py-2 cursor-pointer text-gray-700 hover:bg-[#5A3ECB] hover:text-white transition-colors duration-200"
-                    onClick={() => handleEdit(packageItem)}
-                  >
-                    <FiEdit className="inline" />
-                  </div>
-                  <div
-                    className="px-4 py-2 cursor-pointer text-red-600 hover:bg-[#5A3ECB] hover:text-white transition-colors duration-200"
-                    onClick={() => handleDelete(packageItem._id)}
-                  >
-                    <RiDeleteBinLine className="inline" />
-                  </div>
-                </div>
-              )}
-            </div>
-            <h2 className="text-lg font-semibold text-[#5A3ECB] mb-1">
-              {packageItem.name}
-            </h2>
-            <p className="text-gray-500 text-sm mb-2">Price: ${packageItem.price}</p>
-            <p className="text-gray-700 text-sm mb-4">Store: {packageItem?.seller?.name}</p>
-            <div className="text-sm text-gray-700 mb-4">
-              <h3 className="font-semibold text-[#5A3ECB]">Features:</h3>
-              <ul className="list-disc ml-6">
-                <li>Product Limit: {packageItem.features.productLimit}</li>
-                <li>Support: {packageItem.features.support}</li>
-                <li>Analytics: {packageItem.features.analytics}</li>
-                <li>Payment Gateways: {packageItem.features.paymentGateways}</li>
-                <li>Marketing Tools: {packageItem.features.marketingTools ? 'Yes' : 'No'}</li>
-                <li>Global Reach: {packageItem.features.globalReach ? 'Yes' : 'No'}</li>
-                <li>Referral Program: {packageItem.features.referralProgram ? 'Yes' : 'No'}</li>
-                <li>Transaction Limits: {packageItem.features.transactionLimits}</li>
-              </ul>
-            </div>
-            <span
-              className={`px-4 py-1 text-sm font-medium rounded-full ${
-                packageItem.isActive
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-red-100 text-red-700'
-              }`}
-            >
-              {packageItem.isActive ? 'Active' : 'Inactive'}
-            </span>
-          </div>
-        )))
-        : (
-          <p className="text-center text-gray-500 col-span-full">No matching packages found</p>
-        )}
+      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-[#5A3ECB] text-white">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Store Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Package Plan</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Price</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {filteredPackages.length > 0 ? (
+              filteredPackages.map((pkg) => (
+                <tr key={pkg._id} className="hover:bg-gray-100">
+                  <td className="px-6 py-4 whitespace-nowrap">{pkg.seller?.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{pkg.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{pkg.price} A.D</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-3 py-1 rounded-full text-sm ${pkg.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {pkg.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => openModal(pkg)}
+                      className="px-2 py-1 bg-[#5A3ECB] text-white rounded-md hover:bg-[#3b27a1] transition"
+                    >
+                      Details
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="px-6 py-4 text-center text-gray-500">
+                  No matching packages found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-  
-      {/* Edit Package Modal */}
-      {showModal && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4 text-[#5A3ECB]">
-              Update Package
-            </h3>
-            <form>
-              <label className="block mb-4">
-                Name:
-                <select
-                  name="name"
-                  value={editForm.name}
-                  onChange={handlePackageChange}
-                  className="w-full p-2 mt-1 border border-gray-300 rounded-md focus:ring-2 focus:ring-[#5A3ECB]"
-                >
-                  {Object.keys(packageData).map((packageName) => (
-                    <option key={packageName} value={packageName}>
-                      {packageName}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="mb-6">
-                <h3 className="font-semibold mb-2">Features:</h3>
-                <ul className="list-disc ml-6 text-gray-700">
-                  <li>Product Limit: {currentFeatures.productLimit}</li>
-                  <li>Support: {currentFeatures.support}</li>
-                  <li>Analytics: {currentFeatures.analytics}</li>
-                  <li>Payment Gateways: {currentFeatures.paymentGateways}</li>
-                  <li>Marketing Tools: {currentFeatures.marketingTools ? 'Yes' : 'No'}</li>
-                  <li>Global Reach: {currentFeatures.globalReach ? 'Yes' : 'No'}</li>
-                  <li>Referral Program: {currentFeatures.referralProgram ? 'Yes' : 'No'}</li>
-                  <li>Transaction Limits: {currentFeatures.transactionLimits}</li>
-                </ul>
-              </div>
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  onClick={handleUpdate}
-                  className="bg-[#5A3ECB] text-white px-6 py-2 rounded-full shadow-md hover:bg-[#4B31A6] transition-colors duration-200"
-                >
-                  Update
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="bg-gray-200 px-6 py-2 rounded-full hover:bg-gray-300 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
+
+      {/* Modal */}
+      {isModalOpen && selectedPackage && (
+  <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-40 backdrop-blur-sm z-50">
+    <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl animate-scaleIn">
+
+      {/* Close Button */}
+      <button
+        onClick={closeModal}
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-800 transition text-2xl"
+      >
+        ✕
+      </button>
+
+      {/* Title */}
+      <h2 className="text-3xl font-extrabold text-center text-[#5A3ECB] mb-6">
+        📦 Package Details
+      </h2>
+
+      {/* Main Info */}
+      <div className="space-y-2 text-gray-700 mb-6">
+        <p><span className="font-semibold">🏪 Store Name:</span> {selectedPackage?.seller?.name}</p>
+        <p><span className="font-semibold">📝 Package Name:</span> {selectedPackage?.name}</p>
+        <p><span className="font-semibold">💰 Price:</span> {selectedPackage?.price} A.D</p>
+        <p>
+          <span className="font-semibold">⚡ Status:</span>{" "}
+          <span className={`px-3 py-1 rounded-full text-sm ${selectedPackage.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {selectedPackage.isActive ? "Active" : "Inactive"}
+          </span>
+        </p>
+      </div>
+
+      {/* Features */}
+      <div className="border-t pt-4">
+        <h3 className="text-2xl font-bold text-[#5A3ECB] mb-4 text-center">✨ Features</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600 text-sm">
+          <div>🛒 Product Limit: <span className="font-semibold">{selectedPackage.features?.productLimit}</span></div>
+          <div>🤝 Support: <span className="font-semibold">{selectedPackage.features?.support}</span></div>
+          <div>📈 Analytics: <span className="font-semibold">{selectedPackage.features?.analytics}</span></div>
+          <div>💳 Payment Gateways: <span className="font-semibold">{selectedPackage.features?.paymentGateways}</span></div>
+          <div>📢 Marketing Tools: <span className="font-semibold">{selectedPackage.features?.marketingTools ? 'Yes' : 'No'}</span></div>
+          <div>🌍 Global Reach: <span className="font-semibold">{selectedPackage.features?.globalReach ? 'Yes' : 'No'}</span></div>
+          <div>🎁 Referral Program: <span className="font-semibold">{selectedPackage.features?.referralProgram ? 'Yes' : 'No'}</span></div>
+          <div>💸 Transaction Limits: <span className="font-semibold">{selectedPackage.features?.transactionLimits}</span></div>
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
-  
 };
 
 export default Packages;

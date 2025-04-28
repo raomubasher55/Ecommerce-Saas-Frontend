@@ -48,8 +48,8 @@ const AdminDashboard = () => {
         return <Promotions />;
       case "Customer Support":
         return <CustomerSupport />;
-      // case "Packages":
-      //   return <Packages />;
+      case "Packages":
+        return <Packages />;
       case "messages":
         return <Messages />;
       case "Withdrawal Approvals":

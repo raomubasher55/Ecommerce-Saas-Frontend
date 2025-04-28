@@ -1,4 +1,8 @@
 import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 import Sidebar from "./shop/Sidebar";
 import Topbar from "./shop/Topbar";
 import Overview from "./shop/Overview";
@@ -10,74 +14,90 @@ import DiscountsAndPromotions from "./shop/DiscountsAndPromotions";
 import Messages from "./shop/Messages";
 import Settings from "./shop/Settings";
 import Categories from "./shop/Categories";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import Withdraw from "./shop/Withdraw";
 import PaymentDetails from "./shop/PaymentDetails";
 import BlacklistProducts from "./shop/BlacklistProducts";
+import { fetchStore } from "../../store/actions/storeActions";
+import Loader from "../../utils/Loader";
+
 const ShopDashboard = () => {
   const [activeComponent, setActiveComponent] = useState("Dashboard");
-  const {store} = useSelector(state => state.store);
+  const { store } = useSelector(state => state.store);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!store) {
-      navigate("/register-store");
+    if (!store || Object.keys(store).length === 0) {
+      // Agar store ka data missing hai to fetch karo
+      dispatch(fetchStore());
       return;
     }
 
-    if (!store?.package || new Date(store.package.expiresAt) < new Date()) {
-      toast.info("Please confirm your payment to continue");
-      navigate("/upload-documents/choose-plans");
-      return;
-    }
-    
-    
-    if (store?.status === "suspended") {
-      toast.info("Please contact to Admin");
-      navigate("/suspend");
-      return;
-    }
-    
+    // Jab tak documents nahi aate, kuch mat karo
     if (!store.documents) {
+      return;
+    }
+
+    // Ab safe check kar sakte hain
+    if (store.documents.length === 0) {
       toast.info("Please upload your documents to continue");
       navigate("/upload-documents");
       return;
     }
-    
-    if (store.documents[0]?.status === "rejected") {
-      toast.info("Your documents are rejected. Please upload your documents again.");
-      navigate("/upload-documents");
-      return;
-    }
-    
-    if (store.documents[0]?.status === "pending") {
+
+    const docStatus = store.documents[0]?.status;
+
+    if (docStatus === "pending") {
       toast.info("Please wait for admin approval of your documents.");
       navigate("/waiting-for-approval");
       return;
     }
-    
-    
-  }, [store, navigate]);
+
+    if (docStatus === "rejected") {
+      toast.info("Your documents are rejected. Please upload your documents again.");
+      navigate("/upload-documents");
+      return;
+    }
+
+    if (store.status === "suspended") {
+      toast.info("Please contact Admin");
+      navigate("/suspend");
+      return;
+    }
+
+    if (store.package?.expiresAt && new Date(store.package.expiresAt) < new Date()) {
+      toast.info("Please confirm your payment to continue");
+      navigate("/upload-documents/choose-plans");
+      return;
+    }
+
+    // ✅ Sab kuch theek hai, loading hatao
+    setLoading(false);
+
+  }, [store, navigate, dispatch]);
+  
+  
+  
+
   const renderContent = () => {
     switch (activeComponent) {
       case "Dashboard":
         return <Overview />;
       case "Products":
-        return <ProductCard /> ;
-        case "Categories":
-          return <Categories /> ;
+        return <ProductCard />;
+      case "Categories":
+        return <Categories />;
       case "Orders":
         return <CostumerOrders />;
       case "Customers":
-        return <Customers /> ;
+        return <Customers />;
       case "Analytics":
-        return  <Analytics /> ;
+        return <Analytics />;
       case "Ads Data":
         return <DiscountsAndPromotions />;
       case "Messages":
-        return <Messages /> ;
+        return <Messages />;
       case "Settings":
         return <Settings />;
       case "Withdraw":
@@ -92,27 +112,35 @@ const ShopDashboard = () => {
   }
 
 
-    const [isSidebarOpen, setSidebarOpen] = useState(true);
-    const toggleSidebar = () => {
-      setSidebarOpen(!isSidebarOpen);
-    };
-
-    return (
-      <div className="flex overflow-y-scroll h-screen"> 
-        {/* Sidebar */}
-
-        <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} setActiveComponent={setActiveComponent} activeComponent={activeComponent} />
-
-        {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
-          {/* Top Bar */}
-          <Topbar />
-
-          {/* Dynamic Content Area */}
-          <main className="flex-1 bg-gray-100 overflow-auto">{renderContent()}</main>
-        </div>
-      </div>
-    );
+  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const toggleSidebar = () => {
+    setSidebarOpen(!isSidebarOpen);
   };
 
-  export default ShopDashboard;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div><Loader/></div> 
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex overflow-y-scroll h-screen">
+      {/* Sidebar */}
+
+      <Sidebar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} setActiveComponent={setActiveComponent} activeComponent={activeComponent} />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Bar */}
+        <Topbar />
+
+        {/* Dynamic Content Area */}
+        <main className="flex-1 bg-gray-100 overflow-auto">{renderContent()}</main>
+      </div>
+    </div>
+  );
+};
+
+export default ShopDashboard;
