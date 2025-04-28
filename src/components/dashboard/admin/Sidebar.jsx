@@ -20,7 +20,7 @@ import { IoInformation } from "react-icons/io5";
       { name: "Orders & Transactions", icon: <FaMoneyCheckAlt /> },
       { name: "Promotions", icon: <FaBullhorn /> },
       { name: "Customer Support", icon: <FaHeadset /> },
-      // { name: "Packages", icon: <FaBoxes /> },
+      { name: "Packages", icon: <FaBoxes /> },
       { name: "messages", icon: <FaComments /> },
       { name: "Withdrawal Approvals", icon: <FaMoneyCheck /> },
       { name: "Info", icon: <FaInfoCircle /> },
