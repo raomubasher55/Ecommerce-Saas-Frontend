@@ -15,6 +15,7 @@ export default function ShopManagement() {
   const [storeSales, setStoreSales] = useState({});
   const [loadingSales, setLoadingSales] = useState(true);
   const [loadingActions, setLoadingActions] = useState({});
+  const [loadingActionsReminder, setLoadingActionsReninder] = useState({});
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -58,6 +59,7 @@ export default function ShopManagement() {
     setRefreshData(true);
     dispatch(fetchStores());
     setLoadingActions((prev) => ({ ...prev, [documentId]: false }));
+    setExpandedStore(null)
   };
 
   const handleReject = async (documentId, storeId) => {
@@ -66,14 +68,15 @@ export default function ShopManagement() {
     setRefreshData(true);
     dispatch(fetchStores());
     setLoadingActions((prev) => ({ ...prev, [documentId]: false }));
+    setExpandedStore(null)
   };
 
   const handleReminder = async (storeEmail) => {
-    setLoadingActions((prev) => ({ ...prev, [storeEmail]: true }));
+    setLoadingActionsReninder((prev) => ({ ...prev, [storeEmail]: true }));
     await dispatch(sendReminder(storeEmail));
     setRefreshData(true);
     dispatch(fetchStores());
-    setLoadingActions((prev) => ({ ...prev, [storeEmail]: false }));
+    setLoadingActionsReninder((prev) => ({ ...prev, [storeEmail]: false }));
     setExpandedStore(null)
   }
   // Categorizing stores based on document status
@@ -154,13 +157,13 @@ export default function ShopManagement() {
         >
           Approved Stores ({approvedStores.length})
         </button>
-        {/* <button
+        <button
           onClick={() => setSelectedCategory("rejected")}
           className={`px-4 py-2 rounded transition-all ${selectedCategory === "rejected" ? "bg-red-600 text-white" : "bg-gray-200 hover:bg-gray-300"
             }`}
         >
           Rejected Stores ({rejectedStores.length})
-        </button> */}
+        </button>
       </div>
 
       <input
@@ -331,11 +334,11 @@ export default function ShopManagement() {
 
                             <button
                               onClick={() => handleReminder(store.email)}
-                              disabled={loadingActions[store.email]}
-                              className={`bg-blue-500 text-white px-4 py-2 rounded ${loadingActions[store.email] ? "opacity-50 cursor-not-allowed" : "hover:bg-green-600"
+                              disabled={loadingActionsReminder[store.email]}
+                              className={`bg-blue-500 text-white px-4 py-2 rounded ${loadingActionsReminder[store.email] ? "opacity-50 cursor-not-allowed" : "hover:bg-green-600"
                                 }`}
                             >
-                              {loadingActions[doc._id] ? "Sending..." : "Reminder Pending Payment"}
+                              {loadingActionsReminder[doc._id] ? "Sending..." : "Reminder Pending Payment"}
                             </button>
                           </div>
                         </li>
