@@ -30,7 +30,7 @@ export const WelcomeSalesSlider = () => {
         }));
 
   return (
-    <div className="w-full md:w-3/5 px-2 md:h-[500px] rounded overflow-hidden">
+    <div className="w-full md:w-3/5 px-2 md:h-[500px] rounded overflow-hidden z-0 ">
       {/* {loading && <p>Loading...</p>} */}
 
       <Swiper
@@ -48,7 +48,7 @@ export const WelcomeSalesSlider = () => {
               <img
                 src={ad.url}
                 alt="Default Ad"
-                className="w-full h-[300px] md:h-[470px] object-cover rounded-lg shadow-lg cursor-pointer"
+                className="w-full h-[300px] md:h-[470px] object-cover rounded-lg shadow-lg cursor-pointer z-0"
               />
             ) : (
               <Link

@@ -258,7 +258,7 @@ const Navbar = () => {
 
         {/* Search Input (Mobile) */}
         {isSearchOpen && (
-          <div className="md:hidden absolute left-0 w-full bg-white shadow-md px-2 transition-all duration-300 top-28" ref={searchRef}>
+          <div className="md:hidden absolute left-0 w-full z-10 bg-white shadow-md px-2 transition-all duration-300 top-28" ref={searchRef}>
             <form onSubmit={handleSearchSubmit}>
               <input
                 type="text"
@@ -271,7 +271,7 @@ const Navbar = () => {
 
             {/* Mobile Search Suggestions Box */}
             {showSuggestions && searchResults?.products?.length > 0 && (
-              <div className="bg-white mt-1 rounded-lg shadow-lg border z-50 max-h-96 overflow-y-auto">
+              <div className="bg-white mt-1 rounded-lg shadow-lg border  max-h-96 overflow-y-auto z-50">
                 {searchResults.products.map((product) => (
                   <div
                     key={product._id}
@@ -280,7 +280,9 @@ const Navbar = () => {
                   >
                     <div className="flex items-center space-x-3">
                       <img
-                        src={product.images[0]?.url || '/placeholder.png'}
+                        src={product.images[0]?.url
+                          ? `${import.meta.env.VITE_APP}/${product.images[0]?.url.replace(/\\/g, '/')}`
+                          : '/placeholder.png'}
                         alt={product.name}
                         className="w-12 h-12 object-cover rounded"
                       />
